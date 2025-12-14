@@ -18,11 +18,11 @@ const Index = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold">
-                <span className="text-primary">Market</span>Hub
+                <span className="text-primary">Espol</span>Hub
               </h1>
               <div className="flex items-center gap-1 text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5" />
-                <span className="text-sm">Ciudad de México</span>
+                <span className="text-sm">Campus Espol</span>
               </div>
             </div>
             <button className="relative w-10 h-10 bg-card rounded-full flex items-center justify-center shadow-card">
