@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
@@ -13,12 +14,20 @@ import Sell from "./pages/Sell";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
-      <TooltipProvider>
+    <AuthProvider>
+      <CartProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner position="top-center" />
         <BrowserRouter>
@@ -35,8 +44,9 @@ const App = () => (
             <BottomNav />
           </div>
         </BrowserRouter>
-      </TooltipProvider>
-    </CartProvider>
+        </TooltipProvider>
+      </CartProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
