@@ -1,14 +1,60 @@
+import { useEffect, useState } from 'react';
 import { Search, Bell, MapPin, TrendingUp, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mockProducts, categories } from '@/data/products';
+import { useQuery } from '@tanstack/react-query';
 import ProductCard from '@/components/ProductCard';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getPopularAnnouncements, getRecentAnnouncements } from '@/api/announcements';
+import { getCategories } from '@/api/categories';
+import { Announcement, Category } from '@/types/models';
 
 const Index = () => {
   const navigate = useNavigate();
-  const featuredProducts = mockProducts.slice(0, 4);
-  const recentProducts = mockProducts.slice(4);
+
+  // Fetch categories
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+
+  // Fetch popular announcements
+  const { data: popularData, isLoading: popularLoading } = useQuery({
+    queryKey: ['announcements', 'popular'],
+    queryFn: () => getPopularAnnouncements({ per_page: 4 }),
+  });
+
+  // Fetch recent announcements
+  const { data: recentData, isLoading: recentLoading } = useQuery({
+    queryKey: ['announcements', 'recent'],
+    queryFn: () => getRecentAnnouncements({ per_page: 4 }),
+  });
+
+  const categories = categoriesData || [];
+  const popularAnnouncements = popularData?.data || [];
+  const recentAnnouncements = recentData?.data || [];
+
+  // Category emoji mapping based on name
+  const getCategoryEmoji = (name: string): string => {
+    const emojiMap: Record<string, string> = {
+      'Electrónica': '📱',
+      'Libros': '📚',
+      'Libros y Apuntes': '📚',
+      'Ropa': '👕',
+      'Ropa y Accesorios': '👕',
+      'Deportes': '⚽',
+      'Hogar': '🏠',
+      'Hogar y Cocina': '🏠',
+      'Música': '🎸',
+      'Instrumentos Musicales': '🎸',
+      'Moda': '👕',
+      'Vehículos': '🚗',
+      'Servicios': '🛠️',
+      'Muebles': '🪑',
+    };
+    return emojiMap[name] || '📦';
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -55,27 +101,39 @@ const Index = () => {
         >
           <h2 className="text-lg font-semibold mb-4">Categorías</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {categories.slice(1).map((category, index) => (
-              <motion.button
-                key={category}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => navigate('/catalog')}
-                className="flex flex-col items-center gap-2 min-w-[80px]"
-              >
-                <div className="w-16 h-16 bg-peach rounded-2xl flex items-center justify-center">
-                  <span className="text-2xl">
-                    {['📱', '⚽', '🏠', '🎸', '👕', '🚗', '🛠️'][index] || '📦'}
-                  </span>
+            {categoriesLoading ? (
+              // Loading skeleton for categories
+              Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="flex flex-col items-center gap-2 min-w-[80px]">
+                  <Skeleton className="w-16 h-16 rounded-2xl" />
+                  <Skeleton className="w-12 h-3" />
                 </div>
-                <span className="text-xs font-medium text-center">{category}</span>
-              </motion.button>
-            ))}
+              ))
+            ) : (
+              categories.map((category, index) => (
+                <motion.button
+                  key={category.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => navigate(`/catalog?category=${category.attributes.id}`)}
+                  className="flex flex-col items-center gap-2 min-w-[80px]"
+                >
+                  <div className="w-16 h-16 bg-peach rounded-2xl flex items-center justify-center">
+                    <span className="text-2xl">
+                      {category.attributes.icon || getCategoryEmoji(category.attributes.name)}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium text-center line-clamp-1">
+                    {category.attributes.name}
+                  </span>
+                </motion.button>
+              ))
+            )}
           </div>
         </motion.section>
 
-        {/* Featured Products */}
+        {/* Featured/Popular Products */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,16 +146,34 @@ const Index = () => {
               <h2 className="text-lg font-semibold">Destacados</h2>
             </div>
             <Link
-              to="/catalog"
+              to="/catalog?sort=popular"
               className="text-sm text-primary font-medium hover:underline"
             >
               Ver todo
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+            {popularLoading ? (
+              // Loading skeleton for products
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-card rounded-2xl overflow-hidden">
+                  <Skeleton className="aspect-square w-full" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              popularAnnouncements.map((announcement, index) => (
+                <ProductCard
+                  key={announcement.id}
+                  announcement={announcement}
+                  index={index}
+                />
+              ))
+            )}
           </div>
         </motion.section>
 
@@ -113,16 +189,34 @@ const Index = () => {
               <h2 className="text-lg font-semibold">Recientes</h2>
             </div>
             <Link
-              to="/catalog"
+              to="/catalog?sort=recent"
               className="text-sm text-primary font-medium hover:underline"
             >
               Ver todo
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {recentProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+            {recentLoading ? (
+              // Loading skeleton for products
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-card rounded-2xl overflow-hidden">
+                  <Skeleton className="aspect-square w-full" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              recentAnnouncements.map((announcement, index) => (
+                <ProductCard
+                  key={announcement.id}
+                  announcement={announcement}
+                  index={index}
+                />
+              ))
+            )}
           </div>
         </motion.section>
       </main>
