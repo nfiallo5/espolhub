@@ -20,6 +20,15 @@ const ProductCard = ({ announcement, index = 0 }: ProductCardProps) => {
   }
 
   const { attributes } = announcement;
+
+  // Use top-level ID (from JSON:API spec) or attributes.id as fallback
+  const announcementId = announcement.id || attributes.id;
+
+  // Skip rendering if no valid ID
+  if (!announcementId) {
+    return null;
+  }
+
   const conditionLabel = CONDITIONS[attributes.condition];
   const conditionColor = CONDITION_COLORS[attributes.condition];
 
@@ -34,7 +43,7 @@ const ProductCard = ({ announcement, index = 0 }: ProductCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
     >
-      <Link to={`/product/${attributes.id}`}>
+      <Link to={`/product/${announcementId}`}>
         <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-elevated transition-all duration-300 group">
           <div className="relative aspect-square overflow-hidden">
             <img

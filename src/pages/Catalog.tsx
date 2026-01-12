@@ -108,19 +108,23 @@ const Catalog = () => {
             >
               Todos
             </button>
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.attributes.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedCategory === category.attributes.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-muted'
-                }`}
-              >
-                {category.attributes.icon} {category.attributes.name}
-              </button>
-            ))}
+            {categories.map((category) => {
+              if (!category?.attributes) return null;
+              const categoryId = Number(category.id) || category.attributes.id;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryChange(categoryId || null)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    selectedCategory === categoryId
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-muted'
+                  }`}
+                >
+                  {category.attributes.icon} {category.attributes.name}
+                </button>
+              );
+            })}
           </div>
         </div>
       </header>

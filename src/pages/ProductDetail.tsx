@@ -33,6 +33,10 @@ const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Validate ID is a valid number
+  const numericId = id ? Number(id) : NaN;
+  const isValidId = !isNaN(numericId) && numericId > 0;
+
   // Fetch announcement details (this also increments views)
   const {
     data: announcement,
@@ -40,8 +44,8 @@ const ProductDetail = () => {
     error,
   } = useQuery({
     queryKey: ['announcement', id],
-    queryFn: () => getAnnouncement(Number(id)),
-    enabled: !!id,
+    queryFn: () => getAnnouncement(numericId),
+    enabled: !!id && isValidId,
   });
 
   // Fetch seller's other announcements
@@ -57,6 +61,16 @@ const ProductDetail = () => {
     sellerAnnouncements
       ?.filter((a) => a.attributes.id !== announcement?.attributes.id)
       .slice(0, 4) || [];
+
+  // Handle invalid ID
+  if (!id || !isValidId) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <p className="text-muted-foreground mb-4">ID de producto inválido</p>
+        <Button onClick={() => navigate('/catalog')}>Volver a explorar</Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -271,7 +285,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Category */}
-          {category && (
+          {category?.attributes && (
             <div className="mt-4">
               <span className="px-3 py-1.5 bg-secondary rounded-full text-sm">
                 {category.attributes.icon} {category.attributes.name}
@@ -288,7 +302,7 @@ const ProductDetail = () => {
           <Separator className="my-6" />
 
           {/* Seller Info */}
-          {seller && (
+          {seller?.attributes && (
             <div className="p-4 bg-secondary rounded-2xl">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -327,8 +341,8 @@ const ProductDetail = () => {
       {otherItems.length > 0 && (
         <div className="container mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Más de {seller?.attributes.name}</h2>
-            {seller && (
+            <h2 className="text-lg font-semibold">Más de {seller?.attributes?.name}</h2>
+            {seller?.attributes && (
               <Link
                 to={`/seller/${seller.attributes.id}`}
                 className="text-sm text-primary hover:underline"

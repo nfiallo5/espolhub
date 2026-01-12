@@ -110,25 +110,29 @@ const Index = () => {
                 </div>
               ))
             ) : (
-              categories.map((category, index) => (
-                <motion.button
-                  key={category.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => navigate(`/catalog?category=${category.attributes.id}`)}
-                  className="flex flex-col items-center gap-2 min-w-[80px]"
-                >
-                  <div className="w-16 h-16 bg-peach rounded-2xl flex items-center justify-center">
-                    <span className="text-2xl">
-                      {category.attributes.icon || getCategoryEmoji(category.attributes.name)}
+              categories.map((category, index) => {
+                if (!category?.attributes) return null;
+                const categoryId = Number(category.id) || category.attributes.id;
+                return (
+                  <motion.button
+                    key={category.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => navigate(`/catalog?category=${categoryId}`)}
+                    className="flex flex-col items-center gap-2 min-w-[80px]"
+                  >
+                    <div className="w-16 h-16 bg-peach rounded-2xl flex items-center justify-center">
+                      <span className="text-2xl">
+                        {category.attributes.icon || getCategoryEmoji(category.attributes.name)}
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium text-center line-clamp-1">
+                      {category.attributes.name}
                     </span>
-                  </div>
-                  <span className="text-xs font-medium text-center line-clamp-1">
-                    {category.attributes.name}
-                  </span>
-                </motion.button>
-              ))
+                  </motion.button>
+                );
+              })
             )}
           </div>
         </motion.section>

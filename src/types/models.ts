@@ -2,7 +2,7 @@ import { Faculty, ConditionKey, AnnouncementStatus } from './enums';
 
 // Seller Types
 export interface SellerAttributes {
-  id: number;
+  id?: number; // Optional: may not be in attributes if using JSON:API spec
   name: string;
   faculty: Faculty;
   email: string;
@@ -19,7 +19,7 @@ export interface Seller {
 
 // Public profile has limited info (no email/phone)
 export interface PublicSellerAttributes {
-  id: number;
+  id?: number; // Optional: may not be in attributes if using JSON:API spec
   name: string;
   faculty: Faculty;
   whatsapp_link: string;
@@ -34,7 +34,7 @@ export interface PublicSeller {
 
 // Category Types
 export interface CategoryAttributes {
-  id: number;
+  id?: number; // Optional: may not be in attributes if using JSON:API spec
   name: string;
   description: string;
   icon: string;
@@ -50,7 +50,7 @@ export interface Category {
 
 // Announcement Types
 export interface AnnouncementAttributes {
-  id: number;
+  id?: number; // Optional: may not be in attributes if using JSON:API spec
   title: string;
   description: string;
   price: number | string; // API may return as string
